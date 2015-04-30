@@ -35,6 +35,8 @@ TestTreeItem::TestTreeItem(const QString &name, const QString &filePath, Type ty
         break;
     case TEST_CLASS:
     case TEST_FUNCTION:
+    case SQUISH_SUITE:
+    case SQUISH_TESTCASE:
         m_checked = Qt::Checked;
         break;
     case TEST_DATAFUNCTION:
@@ -144,12 +146,14 @@ bool TestTreeItem::modifyContent(const TestTreeItem *modified)
 void TestTreeItem::setChecked(const Qt::CheckState checkState)
 {
     switch (m_type) {
-    case TEST_FUNCTION: {
+    case TEST_FUNCTION:
+    case SQUISH_TESTCASE: {
         m_checked = (checkState == Qt::Unchecked ? Qt::Unchecked : Qt::Checked);
         m_parent->revalidateCheckState();
         break;
     }
-    case TEST_CLASS: {
+    case TEST_CLASS:
+    case SQUISH_SUITE: {
         Qt::CheckState usedState = (checkState == Qt::Unchecked ? Qt::Unchecked : Qt::Checked);
         foreach (TestTreeItem *child, m_children) {
             child->setChecked(usedState);
@@ -166,6 +170,8 @@ Qt::CheckState TestTreeItem::checked() const
     switch (m_type) {
     case TEST_CLASS:
     case TEST_FUNCTION:
+    case SQUISH_SUITE:
+    case SQUISH_TESTCASE:
         return m_checked;
     case TEST_DATAFUNCTION:
     case TEST_SPECIALFUNCTION:
@@ -183,6 +189,29 @@ QList<QString> TestTreeItem::getChildNames() const
     foreach (TestTreeItem *item, m_children)
         names << item->name();
     return names;
+}
+
+TestTreeItem::Type TestTreeItem::toTestType(int testType)
+{
+    switch (testType) {
+    case ROOT:
+        return ROOT;
+    case TEST_CLASS:
+        return TEST_CLASS;
+    case TEST_FUNCTION:
+        return TEST_FUNCTION;
+    case TEST_DATAFUNCTION:
+        return TEST_DATAFUNCTION;
+    case TEST_SPECIALFUNCTION:
+        return TEST_SPECIALFUNCTION;
+    case SQUISH_SUITE:
+        return SQUISH_SUITE;
+    case SQUISH_TESTCASE:
+        return SQUISH_TESTCASE;
+    default:
+        qWarning("This should not happen: Unknown test type %d", testType);
+        return ROOT; // should cause the least trouble
+    }
 }
 
 void TestTreeItem::revalidateCheckState()

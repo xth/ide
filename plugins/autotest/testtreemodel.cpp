@@ -22,6 +22,8 @@
 #include "testtreeitem.h"
 #include "testtreemodel.h"
 
+#include <coreplugin/coreconstants.h> // remove if placeholder icon is removed as well
+
 #include <cpptools/cppmodelmanager.h>
 
 #include <projectexplorer/buildtargetinfo.h>
@@ -50,11 +52,13 @@ TestTreeModel::TestTreeModel(QObject *parent) :
     m_rootItem(new TestTreeItem(QString(), QString(), TestTreeItem::ROOT)),
     m_autoTestRootItem(new TestTreeItem(tr("Auto Tests"), QString(), TestTreeItem::ROOT, m_rootItem)),
     m_quickTestRootItem(new TestTreeItem(tr("Qt Quick Tests"), QString(), TestTreeItem::ROOT, m_rootItem)),
+    m_squishTestRootItem(new TestTreeItem(tr("Squish Tests"), QString(), TestTreeItem::ROOT, m_rootItem)),
     m_parser(new TestCodeParser(this)),
     m_connectionsInitialized(false)
 {
     m_rootItem->appendChild(m_autoTestRootItem);
     m_rootItem->appendChild(m_quickTestRootItem);
+    m_rootItem->appendChild(m_squishTestRootItem);
 
     connect(m_parser, &TestCodeParser::cacheCleared, this,
             &TestTreeModel::removeAllTestItems, Qt::QueuedConnection);
@@ -183,13 +187,21 @@ int TestTreeModel::columnCount(const QModelIndex &) const
 
 static QIcon testTreeIcon(TestTreeItem::Type type)
 {
-    static QIcon icons[3] = {
+    static QIcon icons[5] = {
         QIcon(),
         QIcon(QLatin1String(":/images/class.png")),
-        QIcon(QLatin1String(":/images/func.png"))
+        QIcon(QLatin1String(":/images/func.png")),
+        // TODO these icons are actually only placeholder
+        QIcon(QLatin1String(Core::Constants::ICON_DIR)),
+        QIcon(QLatin1String(":/fancyactionbar/images/mode_Edit.png"))
     };
-    if (type >= 3)
+    if (type >= 3) {
+        if (type == TestTreeItem::SQUISH_SUITE)
+            return icons[3];
+        if (type == TestTreeItem::SQUISH_TESTCASE)
+            return icons[4];
         return icons[2];
+    }
     return icons[type];
 }
 
@@ -204,7 +216,8 @@ QVariant TestTreeModel::data(const QModelIndex &index, int role) const
 
     if (role == Qt::DisplayRole) {
         if ((item == m_autoTestRootItem && m_autoTestRootItem->childCount() == 0)
-                || (item == m_quickTestRootItem && m_quickTestRootItem->childCount() == 0)) {
+                || (item == m_quickTestRootItem && m_quickTestRootItem->childCount() == 0)
+                || (item == m_squishTestRootItem && m_squishTestRootItem->childCount() == 0)) {
             return QString(item->name() + tr(" (none)"));
         } else {
             if (item->name().isEmpty())
@@ -238,6 +251,8 @@ QVariant TestTreeModel::data(const QModelIndex &index, int role) const
                 return parent->name().isEmpty() ? QVariant() : item->checked();
             else
                 return item->checked();
+        case TestTreeItem::SQUISH_SUITE:
+        case TestTreeItem::SQUISH_TESTCASE:
         default:
             return item->checked();
         }
@@ -262,6 +277,8 @@ QVariant TestTreeModel::data(const QModelIndex &index, int role) const
         default:
             return false;
         }
+    case TypeRole:
+        return item->type();
     }
 
     // TODO ?
@@ -280,12 +297,14 @@ bool TestTreeModel::setData(const QModelIndex &index, const QVariant &value, int
         if (item->checked() != old) {
             switch(item->type()) {
             case TestTreeItem::TEST_CLASS:
+            case TestTreeItem::SQUISH_SUITE:
                 emit dataChanged(index, index);
                 if (item->childCount() > 0) {
                     emit dataChanged(index.child(0, 0), index.child(item->childCount() - 1, 0));
                 }
                 break;
             case TestTreeItem::TEST_FUNCTION:
+            case TestTreeItem::SQUISH_TESTCASE:
                 emit dataChanged(index, index);
                 emit dataChanged(index.parent(), index.parent());
                 break;
@@ -306,10 +325,12 @@ Qt::ItemFlags TestTreeModel::flags(const QModelIndex &index) const
     TestTreeItem *item = static_cast<TestTreeItem *>(index.internalPointer());
     switch(item->type()) {
     case TestTreeItem::TEST_CLASS:
+    case TestTreeItem::SQUISH_SUITE:
         if (item->name().isEmpty())
             return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsTristate | Qt::ItemIsUserCheckable;
     case TestTreeItem::TEST_FUNCTION:
+    case TestTreeItem::SQUISH_TESTCASE:
         if (item->parent()->name().isEmpty())
             return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
@@ -780,6 +801,8 @@ TestTreeItem *TestTreeModel::rootItemForType(TestTreeModel::Type type)
         return m_autoTestRootItem;
     case QuickTest:
         return m_quickTestRootItem;
+    case SquishTest:
+        return m_squishTestRootItem;
     }
     QTC_ASSERT(false, return 0);
 }
@@ -791,6 +814,8 @@ QModelIndex TestTreeModel::rootIndexForType(TestTreeModel::Type type)
         return index(0, 0);
     case QuickTest:
         return index(1, 0);
+    case SquishTest:
+        return index(2, 0);
     }
     QTC_ASSERT(false, return QModelIndex());
 }

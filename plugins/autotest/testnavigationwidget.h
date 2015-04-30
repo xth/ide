@@ -68,6 +68,7 @@ private slots:
     void onParsingFinished();
 
 private:
+    bool handleSquishContextMenuEvent(QContextMenuEvent *event, bool enabled);
     void initializeFilterMenu();
 
     TestTreeModel *m_model;

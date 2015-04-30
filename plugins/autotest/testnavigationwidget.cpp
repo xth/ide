@@ -84,11 +84,82 @@ TestNavigationWidget::~TestNavigationWidget()
     m_model->disableParsing();
 }
 
+bool TestNavigationWidget::handleSquishContextMenuEvent(QContextMenuEvent *event, bool enabled)
+{
+    bool isSquishMenu = false;
+    QMenu menu;
+
+    // item specific menu entries
+    const QModelIndexList list = m_view->selectionModel()->selectedIndexes();
+    if (list.size() == 1) {
+        QRect rect(m_view->visualRect(list.first()));
+        if (rect.contains(event->pos())) {
+            TestTreeItem::Type type = TestTreeItem::toTestType(list.first().data(TypeRole).toInt());
+
+            if (type == TestTreeItem::SQUISH_TESTCASE) {
+                isSquishMenu = true;
+                QAction *runThisTestCase = new QAction(tr("Run This Test Case"), &menu);
+                menu.addAction(runThisTestCase);
+                runThisTestCase->setEnabled(enabled);
+                QAction *deleteTestCase = new QAction(tr("Delete Test Case"), &menu);
+                menu.addAction(deleteTestCase);
+                deleteTestCase->setEnabled(enabled);
+                menu.addSeparator();
+            } else if (type == TestTreeItem::SQUISH_SUITE) {
+                isSquishMenu = true;
+                QAction *runThisTestSuite = new QAction(tr("Run This Test Suite"), &menu);
+                menu.addAction(runThisTestSuite);
+                runThisTestSuite->setEnabled(enabled);
+                menu.addSeparator();
+                QAction *addNewTestCase = new QAction(tr("Add New Test Case..."), &menu);
+                menu.addAction(addNewTestCase);
+                addNewTestCase->setEnabled(enabled);
+                QAction *closeTestSuite = new QAction(tr("Close Test Suite"), &menu);
+                menu.addAction(closeTestSuite);
+                closeTestSuite->setEnabled(enabled);
+                QAction *deleteTestSuite = new QAction(tr("Delete Test Suite"), &menu);
+                menu.addAction(deleteTestSuite);
+                deleteTestSuite->setEnabled(enabled);
+                menu.addSeparator();
+            }
+        }
+    }
+    // ROOT items aren't selectable - so, check for them different way
+    QModelIndex squishIndex = m_view->model()->index(2, 0);
+    QRect squishRootRect(m_view->visualRect(squishIndex));
+    if (squishRootRect.contains(event->pos()))
+        isSquishMenu = true;
+
+    if (isSquishMenu) {
+        // general squish related menu entries
+        QAction *openSquishSuites = new QAction(tr("Open Squish Suites..."), &menu);
+        menu.addAction(openSquishSuites);
+        openSquishSuites->setEnabled(enabled);
+        QAction *createNewTestSuite = new QAction(tr("Create New Test Suite..."), &menu);
+        menu.addAction(createNewTestSuite);
+        createNewTestSuite->setEnabled(enabled);
+
+        if (m_view->model()->rowCount(squishIndex) > 0) {
+            menu.addSeparator();
+            QAction *closeAllSuites = new QAction(tr("Close All Test Suites"), &menu);
+            menu.addAction(closeAllSuites);
+            closeAllSuites->setEnabled(enabled);
+        }
+
+        menu.exec(mapToGlobal(event->pos()));
+    }
+    return isSquishMenu;
+}
+
 void TestNavigationWidget::contextMenuEvent(QContextMenuEvent *event)
 {
     const bool enabled = !TestRunner::instance()->isTestRunning()
             && m_model->parser()->state() == TestCodeParser::Idle;
     const bool hasTests = m_model->hasTests();
+
+    if (handleSquishContextMenuEvent(event, enabled))
+        return;
+
     QMenu menu;
     QAction *runAll = Core::ActionManager::command(Constants::ACTION_RUN_ALL_ID)->action();
     QAction *runSelected = Core::ActionManager::command(Constants::ACTION_RUN_SELECTED_ID)->action();

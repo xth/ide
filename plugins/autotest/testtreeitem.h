@@ -36,7 +36,9 @@ public:
         TEST_CLASS,
         TEST_FUNCTION,
         TEST_DATAFUNCTION,
-        TEST_SPECIALFUNCTION
+        TEST_SPECIALFUNCTION,
+        SQUISH_SUITE,
+        SQUISH_TESTCASE
     };
 
     TestTreeItem(const QString &name = QString(), const QString &filePath = QString(),
@@ -68,6 +70,8 @@ public:
     Type type() const { return m_type; }
     void setParent(TestTreeItem *parent) { m_parent = parent; }
     QList<QString> getChildNames() const;
+
+    static Type toTestType(int testType);
 
 private:
     void revalidateCheckState();
