@@ -66,6 +66,13 @@ QtcPlugin {
         "testvisitor.h",
         "testxmloutputreader.cpp",
         "testxmloutputreader.h",
+        "testsquishfilehandler.cpp",
+        "testsquishfilehandler.h",
+        "opensquishsuitesdialog.cpp",
+        "opensquishsuitesdialog.h",
+        "opensquishsuitesdialog.ui",
+        "testsquishutils.cpp",
+        "testsquishutils.h"
     ]
 
     Group {

@@ -18,6 +18,7 @@
 ****************************************************************************/
 
 #include "testnavigationwidget.h"
+#include "testsquishfilehandler.h"
 #include "testtreemodel.h"
 #include "testtreeview.h"
 #include "testtreeitemdelegate.h"
@@ -138,6 +139,9 @@ bool TestNavigationWidget::handleSquishContextMenuEvent(QContextMenuEvent *event
         QAction *createNewTestSuite = new QAction(tr("Create New Test Suite..."), &menu);
         menu.addAction(createNewTestSuite);
         createNewTestSuite->setEnabled(enabled);
+
+        connect(openSquishSuites, &QAction::triggered,
+                TestSquishFileHandler::instance(), &TestSquishFileHandler::openTestSuites);
 
         if (m_view->model()->rowCount(squishIndex) > 0) {
             menu.addSeparator();

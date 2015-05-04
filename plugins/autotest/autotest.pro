@@ -26,7 +26,10 @@ SOURCES += \
     testsettings.cpp \
     testsettingspage.cpp \
     testnavigationwidget.cpp \
-    testxmloutputreader.cpp
+    testxmloutputreader.cpp \
+    testsquishfilehandler.cpp \
+    opensquishsuitesdialog.cpp \
+    testsquishutils.cpp
 
 HEADERS += \
     testtreeview.h \
@@ -48,13 +51,17 @@ HEADERS += \
     testsettings.h \
     testsettingspage.h \
     testnavigationwidget.h \
-    testxmloutputreader.h
+    testxmloutputreader.h \
+    testsquishfilehandler.h \
+    opensquishsuitesdialog.h \
+    testsquishutils.h
 
 RESOURCES += \
     autotest.qrc
 
 FORMS += \
-    testsettingspage.ui
+    testsettingspage.ui \
+    opensquishsuitesdialog.ui
 
 equals(TEST, 1) {
     HEADERS += autotestunittests.h

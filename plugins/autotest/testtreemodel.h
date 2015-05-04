@@ -42,6 +42,7 @@ namespace Internal {
 struct TestCodeLocationAndType;
 class TestCodeParser;
 class TestInfo;
+class TestSquishFileHandler;
 class TestTreeItem;
 
 class TestTreeModel : public QAbstractItemModel
@@ -114,6 +115,7 @@ private:
     TestTreeItem *m_quickTestRootItem;
     TestTreeItem *m_squishTestRootItem;
     TestCodeParser *m_parser;
+    TestSquishFileHandler *m_squishFileHandler;
     bool m_connectionsInitialized;
     QAtomicInt m_refCounter;
 };

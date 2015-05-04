@@ -19,6 +19,7 @@
 
 #include "autotestconstants.h"
 #include "testcodeparser.h"
+#include "testsquishfilehandler.h"
 #include "testtreeitem.h"
 #include "testtreemodel.h"
 
@@ -54,6 +55,7 @@ TestTreeModel::TestTreeModel(QObject *parent) :
     m_quickTestRootItem(new TestTreeItem(tr("Qt Quick Tests"), QString(), TestTreeItem::ROOT, m_rootItem)),
     m_squishTestRootItem(new TestTreeItem(tr("Squish Tests"), QString(), TestTreeItem::ROOT, m_rootItem)),
     m_parser(new TestCodeParser(this)),
+    m_squishFileHandler(new TestSquishFileHandler(this)),
     m_connectionsInitialized(false)
 {
     m_rootItem->appendChild(m_autoTestRootItem);
@@ -74,6 +76,11 @@ TestTreeModel::TestTreeModel(QObject *parent) :
             this, &TestTreeModel::updateUnnamedQuickTest, Qt::QueuedConnection);
     connect(m_parser, &TestCodeParser::unnamedQuickTestsRemoved,
             this, &TestTreeModel::removeUnnamedQuickTests, Qt::QueuedConnection);
+
+    connect(m_squishFileHandler, &TestSquishFileHandler::testTreeItemCreated,
+            this, &TestTreeModel::addTestTreeItem, Qt::QueuedConnection);
+    connect(m_squishFileHandler, &TestSquishFileHandler::testTreeItemModified,
+            this, &TestTreeModel::modifyTestTreeItem, Qt::QueuedConnection);
 
 //    CppTools::CppModelManagerInterface *cppMM = CppTools::CppModelManagerInterface::instance();
 //    if (cppMM) {
