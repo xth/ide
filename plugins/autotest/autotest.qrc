@@ -21,5 +21,8 @@
         <file>images/run.png</file>
         <file>images/runselected.png</file>
         <file>images/stop.png</file>
+        <file>images/objectsmap.png</file>
+        <file>images/play.png</file>
+        <file>images/record.png</file>
     </qresource>
 </RCC>

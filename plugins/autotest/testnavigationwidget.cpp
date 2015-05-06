@@ -36,6 +36,7 @@
 #include <coreplugin/actionmanager/actionmanager.h>
 
 #include <QAction>
+#include <QHeaderView>
 #include <QMenu>
 #include <QMessageBox>
 #include <QTimer>
@@ -44,6 +45,8 @@
 
 namespace Autotest {
 namespace Internal {
+
+const int defaultSectionSize = 18;
 
 TestNavigationWidget::TestNavigationWidget(QWidget *parent) :
     QWidget(parent)
@@ -56,6 +59,14 @@ TestNavigationWidget::TestNavigationWidget(QWidget *parent) :
     m_view->setModel(m_sortFilterModel);
     m_view->setSortingEnabled(true);
     m_view->setItemDelegate(new TestTreeItemDelegate(this));
+    QHeaderView *header = new QHeaderView(Qt::Horizontal, m_view);
+    header->setModel(m_model);
+    header->setDefaultSectionSize(0);
+    header->setSectionResizeMode(0, QHeaderView::Stretch);
+    header->setSectionResizeMode(1, QHeaderView::Fixed);
+    header->setSectionResizeMode(2, QHeaderView::Fixed);
+    m_view->setHeader(header);
+    m_view->setHeaderHidden(true);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setMargin(0);
@@ -79,6 +90,11 @@ TestNavigationWidget::TestNavigationWidget(QWidget *parent) :
             this, &TestNavigationWidget::onParsingFinished);
     connect(m_progressTimer, &QTimer::timeout,
             m_progressIndicator, &Utils::ProgressIndicator::show);
+
+    connect(m_view, &QTreeView::expanded, this, &TestNavigationWidget::onExpanded);
+    connect(m_view, &QTreeView::collapsed, this, &TestNavigationWidget::onCollapsed);
+    connect(m_model, &QAbstractItemModel::rowsInserted, this, &TestNavigationWidget::onRowsInserted);
+    connect(m_model, &QAbstractItemModel::rowsRemoved, this, &TestNavigationWidget::onRowsRemoved);
 }
 
 TestNavigationWidget::~TestNavigationWidget()
@@ -93,8 +109,10 @@ bool TestNavigationWidget::handleSquishContextMenuEvent(QContextMenuEvent *event
 
     // item specific menu entries
     const QModelIndexList list = m_view->selectionModel()->selectedIndexes();
-    if (list.size() == 1) {
+    // 3 columns - but we only need the data of the first column as the others contain only an icon
+    if (list.size() == 3) {
         QRect rect(m_view->visualRect(list.first()));
+        rect.adjust(0, 0, defaultSectionSize * 2, 0);
         if (rect.contains(event->pos())) {
             TestTreeItem::Type type = TestTreeItem::toTestType(list.first().data(TypeRole).toInt());
 
@@ -282,6 +300,32 @@ void TestNavigationWidget::onParsingFinished()
 {
     m_progressTimer->stop();
     m_progressIndicator->hide();
+}
+
+void TestNavigationWidget::onExpanded(const QModelIndex &index)
+{
+    if (index.data().toString().startsWith(QLatin1String("Squish")))
+        m_view->header()->setDefaultSectionSize(defaultSectionSize);
+}
+
+void TestNavigationWidget::onCollapsed(const QModelIndex &index)
+{
+    if (index.data().toString().startsWith(QLatin1String("Squish")))
+        m_view->header()->setDefaultSectionSize(0);
+}
+
+void TestNavigationWidget::onRowsInserted(const QModelIndex &parent, int, int)
+{
+    if (parent.isValid() && parent.data().toString().startsWith(QLatin1String("Squish")))
+        if (m_view->isExpanded(parent) && m_model->rowCount(parent))
+            m_view->header()->setDefaultSectionSize(defaultSectionSize);
+}
+
+void TestNavigationWidget::onRowsRemoved(const QModelIndex &parent, int, int)
+{
+    if (parent.isValid() && parent.data().toString().startsWith(QLatin1String("Squish")))
+        if (m_model->rowCount(parent) == 0)
+            m_view->header()->setDefaultSectionSize(0);
 }
 
 void TestNavigationWidget::initializeFilterMenu()

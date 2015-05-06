@@ -63,6 +63,9 @@ void TestTreeItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
         }
     }
 
+    if (index.flags() == Qt::NoItemFlags)
+        opt.palette.setColor(QPalette::Text, opt.palette.color(QPalette::Active, QPalette::Text));
+
     QStyledItemDelegate::paint(painter, opt, index);
 }
 

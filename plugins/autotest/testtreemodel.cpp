@@ -191,7 +191,7 @@ int TestTreeModel::rowCount(const QModelIndex &parent) const
 
 int TestTreeModel::columnCount(const QModelIndex &) const
 {
-    return 1;
+    return 3;
 }
 
 static QIcon testTreeIcon(TestTreeItem::Type type)
@@ -222,6 +222,35 @@ QVariant TestTreeModel::data(const QModelIndex &index, int role) const
     TestTreeItem *item = static_cast<TestTreeItem *>(index.internalPointer());
     if (!item)
         return QVariant();
+
+    if (index.column() != 0) {
+        TestTreeItem::Type type = item->type();
+        switch (role) {
+        case Qt::DecorationRole:
+            if (type == TestTreeItem::SQUISH_SUITE)
+                return index.column() == 1 ? QIcon(QLatin1String(":/images/play.png"))
+                                           : QIcon(QLatin1String(":/images/objectsmap.png"));
+            else if (type == TestTreeItem::SQUISH_TESTCASE)
+                return index.column() == 1 ? QIcon(QLatin1String(":/images/play.png"))
+                                           : QIcon(QLatin1String(":/images/record.png"));
+        case TypeRole:
+            return item->type();
+        case Qt::DisplayRole:
+            if (type == TestTreeItem::SQUISH_SUITE || type == TestTreeItem::SQUISH_TESTCASE)
+                return item->name();
+        case Qt::ToolTipRole:
+            if (type == TestTreeItem::SQUISH_SUITE || type == TestTreeItem::SQUISH_TESTCASE) {
+                if (index.column() == 1)
+                    return tr("Run %1").arg(item->name());
+                else
+                    return type == TestTreeItem::SQUISH_SUITE ? tr("Open objects.map")
+                                                              : tr("Record %1").arg(item->name());
+            }
+        default:
+            return QVariant();
+        }
+        return QVariant();
+    }
 
     if (role == Qt::DisplayRole) {
         if ((item == m_autoTestRootItem && m_autoTestRootItem->childCount() == 0)
@@ -332,7 +361,13 @@ Qt::ItemFlags TestTreeModel::flags(const QModelIndex &index) const
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
     TestTreeItem *item = static_cast<TestTreeItem *>(index.internalPointer());
-    switch(item->type()) {
+    TestTreeItem::Type type = item->type();
+    if (index.column() != 0 && type != TestTreeItem::SQUISH_SUITE
+            && type != TestTreeItem::SQUISH_TESTCASE)
+        return type == TestTreeItem::ROOT ? Qt::NoItemFlags
+                                          : Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
+    switch (type) {
     case TestTreeItem::TEST_CLASS:
     case TestTreeItem::SQUISH_SUITE:
         if (item->name().isEmpty())
@@ -344,7 +379,7 @@ Qt::ItemFlags TestTreeModel::flags(const QModelIndex &index) const
             return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
     case TestTreeItem::ROOT:
-        return Qt::ItemIsEnabled;
+        return Qt::NoItemFlags;
     case TestTreeItem::TEST_DATAFUNCTION:
     case TestTreeItem::TEST_SPECIALFUNCTION:
     default:

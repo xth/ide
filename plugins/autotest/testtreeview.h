@@ -22,6 +22,8 @@
 
 #include <utils/navigationtreeview.h>
 
+#include <QModelIndex>
+
 namespace Core {
 class IContext;
 }
@@ -38,10 +40,20 @@ public:
 
     void selectAll();
     void deselectAll();
+    void resizeEvent(QResizeEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+
+signals:
+    void runTestSuite(const QString &suiteName);
+    void runTestCase(const QString &suiteName, const QString &testCaseName);
+    void openObjectsMap(const QString &suiteName);
+    void recordTestCase(const QString &suiteName, const QString &testCaseName);
 
 private:
     void changeCheckStateAll(const Qt::CheckState checkState);
     Core::IContext *m_context;
+    QModelIndex m_lastMousePressedIndex;
 };
 
 } // namespace Internal

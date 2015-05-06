@@ -97,5 +97,51 @@ void TestTreeView::changeCheckStateAll(const Qt::CheckState checkState)
     }
 }
 
+void TestTreeView::resizeEvent(QResizeEvent *event)
+{
+    // override derived behavior of Utils::NavigationTreeView as we might have more than 1 column
+    TreeView::resizeEvent(event);
+}
+
+void TestTreeView::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        QModelIndex index = indexAt(event->pos());
+        if (index.isValid() && index.column() != 0) {
+            auto type = TestTreeItem::toTestType(index.data(TypeRole).toInt());
+            if (index.column() > 2)
+                qWarning() << "Unexpected column:" << index.column();
+            else if (type == TestTreeItem::SQUISH_SUITE || type == TestTreeItem::SQUISH_TESTCASE)
+                m_lastMousePressedIndex = index;
+        }
+    }
+    QTreeView::mousePressEvent(event);
+}
+
+void TestTreeView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        QModelIndex index = indexAt(event->pos());
+        if (index.isValid() && m_lastMousePressedIndex == index) {
+            auto type = TestTreeItem::toTestType(index.data(TypeRole).toInt());
+            if (type == TestTreeItem::SQUISH_SUITE) {
+                if (index.column() == 1)
+                    emit runTestSuite(index.data().toString());
+                else if (index.column() == 2)
+                    emit openObjectsMap(index.data().toString());
+            } else {
+                const QModelIndex &parent = index.parent();
+                if (parent.isValid()) {
+                    if (index.column() == 1)
+                        emit runTestCase(parent.data().toString(), index.data().toString());
+                    else if (index.column() == 2)
+                        emit recordTestCase(parent.data().toString(), index.data().toString());
+                }
+            }
+        }
+    }
+    QTreeView::mouseReleaseEvent(event);
+}
+
 } // namespace Internal
 } // namespace Autotest

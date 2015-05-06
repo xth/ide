@@ -66,6 +66,10 @@ private slots:
     void onFilterMenuTriggered(QAction *action);
     void onParsingStarted();
     void onParsingFinished();
+    void onExpanded(const QModelIndex &index);
+    void onCollapsed(const QModelIndex &index);
+    void onRowsInserted(const QModelIndex &parent, int, int);
+    void onRowsRemoved(const QModelIndex &parent, int, int);
 
 private:
     bool handleSquishContextMenuEvent(QContextMenuEvent *event, bool enabled);
