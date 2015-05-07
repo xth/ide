@@ -28,6 +28,8 @@
 namespace Autotest {
 namespace Internal {
 
+static QString previousPath;
+
 OpenSquishSuitesDialog::OpenSquishSuitesDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::OpenSquishSuitesDialog)
@@ -43,6 +45,8 @@ OpenSquishSuitesDialog::OpenSquishSuitesDialog(QWidget *parent) :
             this, &OpenSquishSuitesDialog::deselectAll);
     connect(this, &OpenSquishSuitesDialog::accepted,
             this, &OpenSquishSuitesDialog::setChosenSuites);
+
+    ui->directoryLineEdit->setPath(previousPath);
 }
 
 OpenSquishSuitesDialog::~OpenSquishSuitesDialog()
@@ -103,7 +107,8 @@ void OpenSquishSuitesDialog::deselectAll()
 void OpenSquishSuitesDialog::setChosenSuites()
 {
     const int count = ui->suitesListWidget->count();
-    const QDir baseDir(ui->directoryLineEdit->path());
+    previousPath = ui->directoryLineEdit->path();
+    const QDir baseDir(previousPath);
     for (int row = 0; row < count; ++row) {
         QListWidgetItem *item = ui->suitesListWidget->item(row);
         if (item->checkState() == Qt::Checked)
