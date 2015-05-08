@@ -95,6 +95,11 @@ TestNavigationWidget::TestNavigationWidget(QWidget *parent) :
     connect(m_view, &QTreeView::collapsed, this, &TestNavigationWidget::onCollapsed);
     connect(m_model, &QAbstractItemModel::rowsInserted, this, &TestNavigationWidget::onRowsInserted);
     connect(m_model, &QAbstractItemModel::rowsRemoved, this, &TestNavigationWidget::onRowsRemoved);
+
+    connect(m_view, &TestTreeView::runTestCase,
+            TestSquishFileHandler::instance(), &TestSquishFileHandler::runTestCase);
+    connect(m_view, &TestTreeView::runTestSuite,
+            TestSquishFileHandler::instance(), &TestSquishFileHandler::runTestSuite);
 }
 
 TestNavigationWidget::~TestNavigationWidget()
@@ -111,12 +116,15 @@ bool TestNavigationWidget::handleSquishContextMenuEvent(QContextMenuEvent *event
     const QModelIndexList list = m_view->selectionModel()->selectedIndexes();
     // 3 columns - but we only need the data of the first column as the others contain only an icon
     if (list.size() == 3) {
-        QRect rect(m_view->visualRect(list.first()));
+        const QModelIndex &index = list.first();
+        QRect rect(m_view->visualRect(index));
         rect.adjust(0, 0, defaultSectionSize * 2, 0);
         if (rect.contains(event->pos())) {
-            TestTreeItem::Type type = TestTreeItem::toTestType(list.first().data(TypeRole).toInt());
+            TestTreeItem::Type type = TestTreeItem::toTestType(index.data(TypeRole).toInt());
 
             if (type == TestTreeItem::SQUISH_TESTCASE) {
+                const QString caseName = index.data().toString();
+                const QString suiteName = index.parent().data().toString();
                 isSquishMenu = true;
                 QAction *runThisTestCase = new QAction(tr("Run This Test Case"), &menu);
                 menu.addAction(runThisTestCase);
@@ -125,8 +133,12 @@ bool TestNavigationWidget::handleSquishContextMenuEvent(QContextMenuEvent *event
                 menu.addAction(deleteTestCase);
                 deleteTestCase->setEnabled(enabled);
                 menu.addSeparator();
+
+                connect(runThisTestCase, &QAction::triggered, [suiteName, caseName] () {
+                    TestSquishFileHandler::instance()->runTestCase(suiteName, caseName);
+                });
             } else if (type == TestTreeItem::SQUISH_SUITE) {
-                const QString suiteName = list.first().data().toString();
+                const QString suiteName = index.data().toString();
                 isSquishMenu = true;
                 QAction *runThisTestSuite = new QAction(tr("Run This Test Suite"), &menu);
                 menu.addAction(runThisTestSuite);
@@ -143,6 +155,10 @@ bool TestNavigationWidget::handleSquishContextMenuEvent(QContextMenuEvent *event
                 deleteTestSuite->setEnabled(enabled);
                 menu.addSeparator();
 
+                connect(runThisTestSuite, &QAction::triggered,
+                        [suiteName] () {
+                   TestSquishFileHandler::instance()->runTestSuite(suiteName);
+                });
                 connect(closeTestSuite, &QAction::triggered,
                         [suiteName] () {
                     TestSquishFileHandler::instance()->closeTestSuite(suiteName);

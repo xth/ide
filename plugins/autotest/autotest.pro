@@ -31,7 +31,8 @@ SOURCES += \
     testxmloutputreader.cpp \
     testsquishfilehandler.cpp \
     opensquishsuitesdialog.cpp \
-    testsquishutils.cpp
+    testsquishutils.cpp \
+    testsquishtools.cpp
 
 HEADERS += \
     squishsettings.h \
@@ -58,7 +59,8 @@ HEADERS += \
     testxmloutputreader.h \
     testsquishfilehandler.h \
     opensquishsuitesdialog.h \
-    testsquishutils.h
+    testsquishutils.h \
+    testsquishtools.h
 
 RESOURCES += \
     autotest.qrc

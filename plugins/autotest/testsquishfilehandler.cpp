@@ -20,6 +20,11 @@
 #include "opensquishsuitesdialog.h"
 #include "testsquishfilehandler.h"
 #include "testsquishutils.h"
+#include "testsquishtools.h"
+
+#include <coreplugin/icore.h>
+
+#include <utils/qtcassert.h>
 
 #include <QDir>
 #include <QFileInfo>
@@ -30,9 +35,16 @@ namespace Internal {
 
 static TestSquishFileHandler *m_instance = 0;
 
-TestSquishFileHandler::TestSquishFileHandler(QObject *parent) : QObject(parent)
+TestSquishFileHandler::TestSquishFileHandler(QObject *parent)
+    : QObject(parent),
+      m_squishTools(new TestSquishTools)
 {
     m_instance = this;
+}
+
+TestSquishFileHandler::~TestSquishFileHandler()
+{
+    delete m_squishTools;
 }
 
 TestSquishFileHandler *TestSquishFileHandler::instance()
@@ -64,7 +76,7 @@ void TestSquishFileHandler::openTestSuites()
         const QStringList cases = TestSquishUtils::validTestCases(suite);
         const QFileInfo suiteConf(suiteDir, QLatin1String("suite.conf"));
         if (m_suites.contains(suiteDir.dirName())) {
-            if (QMessageBox::question(0, tr("Suite Already Open"),
+            if (QMessageBox::question(Core::ICore::dialogParent(), tr("Suite Already Open"),
                                       tr("A test suite with the name \"%1\" is already open. "
                                          "The opened test suite will be closed and replaced "
                                          "with the new one.").arg(suiteDir.dirName()),
@@ -108,6 +120,45 @@ void TestSquishFileHandler::closeAllTestSuites()
     foreach (const QString &suiteConf, m_suites.values())
         emit testTreeItemsRemoved(suiteConf, TestTreeModel::SquishTest);
     m_suites.clear();
+}
+
+void TestSquishFileHandler::runTestCase(const QString &suiteName, const QString &testCaseName)
+{
+    QTC_ASSERT(!suiteName.isEmpty() && !testCaseName.isEmpty(), return);
+
+    if (m_squishTools->state() != TestSquishTools::Idle)
+        return;
+    const QDir suitePath = QFileInfo(m_suites.value(suiteName)).absoluteDir();
+    if (!suitePath.exists() || !suitePath.isReadable()) {
+        QMessageBox::critical(Core::ICore::dialogParent(), tr("Test Suite Path Not Accessible"),
+                              tr("The path \"%1\" does not exist or is not accessible.\n"
+                                 "Refusing to run test case \"%2\".")
+                              .arg(QDir::toNativeSeparators(suitePath.absolutePath()))
+                              .arg(testCaseName));
+        return;
+    }
+
+    m_squishTools->runTestCases(suitePath.absolutePath(), QStringList() << testCaseName);
+}
+
+void TestSquishFileHandler::runTestSuite(const QString &suiteName)
+{
+    QTC_ASSERT(!suiteName.isEmpty(), return);
+
+    if (m_squishTools->state() != TestSquishTools::Idle)
+        return;
+
+    const QString suiteConf = m_suites.value(suiteName);
+    const QDir suitePath = QFileInfo(suiteConf).absoluteDir();
+    if (!suitePath.exists() || !suitePath.isReadable()) {
+        QMessageBox::critical(Core::ICore::dialogParent(), tr("Test Suite Path Not Accessible"),
+                              tr("The path \"%1\" does not exist or is not accessible.\n"
+                                 "Refusing to run test cases.")
+                              .arg(QDir::toNativeSeparators(suitePath.absolutePath())));
+        return;
+    }
+    QStringList testCases = TestTreeModel::instance()->getSelectedSquishTestCases(suiteConf);
+    m_squishTools->runTestCases(suitePath.absolutePath(), testCases);
 }
 
 } // namespace Internal

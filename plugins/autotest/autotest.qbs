@@ -77,7 +77,9 @@ QtcPlugin {
         "opensquishsuitesdialog.h",
         "opensquishsuitesdialog.ui",
         "testsquishutils.cpp",
-        "testsquishutils.h"
+        "testsquishutils.h",
+        "testsquishtools.cpp",
+        "testsquishtools.h"
     ]
 
     Group {

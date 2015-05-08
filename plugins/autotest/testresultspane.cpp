@@ -37,6 +37,8 @@
 #include <QDebug>
 #include <QHBoxLayout>
 #include <QMenu>
+#include <QPlainTextEdit>
+#include <QTabWidget>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -48,6 +50,9 @@ TestResultsPane::TestResultsPane(QObject *parent) :
     m_context(new Core::IContext(this)),
     m_wasVisibleBefore(false)
 {
+    m_outputPane = new QTabWidget;
+    m_outputPane->setDocumentMode(true);
+
     m_outputWidget = new QWidget;
     QVBoxLayout *outputLayout = new QVBoxLayout;
     outputLayout->setMargin(0);
@@ -86,6 +91,15 @@ TestResultsPane::TestResultsPane(QObject *parent) :
 
     createToolButtons();
 
+    m_runnerServerLog = new QPlainTextEdit;
+    m_runnerServerLog->setMaximumBlockCount(10000);
+
+    m_outputPane->addTab(m_outputWidget, tr("Test Results"));
+    m_outputPane->addTab(m_runnerServerLog, tr("Runner/Server Log"));
+
+    connect(m_outputPane, &QTabWidget::currentChanged, [this] () {
+        navigateStateChanged();
+    });
     connect(m_treeView, &Utils::TreeView::activated, this, &TestResultsPane::onItemActivated);
     connect(m_treeView->selectionModel(), &QItemSelectionModel::currentChanged,
             trd, &TestResultDelegate::currentChanged);
@@ -151,14 +165,19 @@ void TestResultsPane::addTestResult(const TestResult &result)
     navigateStateChanged();
 }
 
+void TestResultsPane::addLogoutput(const QString &output)
+{
+    m_runnerServerLog->appendPlainText(output);
+}
+
 QWidget *TestResultsPane::outputWidget(QWidget *parent)
 {
-    if (m_outputWidget) {
-        m_outputWidget->setParent(parent);
+    if (m_outputPane) {
+        m_outputPane->setParent(parent);
     } else {
         qDebug() << "This should not happen...";
     }
-    return m_outputWidget;
+    return m_outputPane;
 }
 
 QList<QWidget *> TestResultsPane::toolBarWidgets() const
@@ -178,9 +197,13 @@ int TestResultsPane::priorityInStatusBar() const
 
 void TestResultsPane::clearContents()
 {
-    m_filterModel->clearTestResults();
-    navigateStateChanged();
-    m_summaryWidget->setVisible(false);
+    if (m_outputPane->currentIndex() == 0) {
+        m_filterModel->clearTestResults();
+        navigateStateChanged();
+        m_summaryWidget->setVisible(false);
+    } else if (m_outputPane->currentIndex() == 1) {
+        m_runnerServerLog->clear();
+    }
 }
 
 void TestResultsPane::visibilityChanged(bool visible)
@@ -208,7 +231,7 @@ void TestResultsPane::setFocus()
 
 bool TestResultsPane::hasFocus() const
 {
-    return m_treeView->hasFocus();
+    return m_treeView->hasFocus() || m_runnerServerLog->hasFocus();
 }
 
 bool TestResultsPane::canFocus() const
@@ -218,7 +241,7 @@ bool TestResultsPane::canFocus() const
 
 bool TestResultsPane::canNavigate() const
 {
-    return true;
+    return m_outputPane->currentIndex() == 0; // only support navigation for test results
 }
 
 bool TestResultsPane::canNext() const

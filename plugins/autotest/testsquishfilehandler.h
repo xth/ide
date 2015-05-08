@@ -30,11 +30,14 @@
 namespace Autotest {
 namespace Internal {
 
+class TestSquishTools;
+
 class TestSquishFileHandler : public QObject
 {
     Q_OBJECT
 public:
     explicit TestSquishFileHandler(QObject *parent = 0);
+    ~TestSquishFileHandler();
     static TestSquishFileHandler *instance();
 
     void openTestSuites();
@@ -46,8 +49,13 @@ signals:
     void testTreeItemModified(const TestTreeItem &item, TestTreeModel::Type type, const QString &file);
     void testTreeItemsRemoved(const QString &filePath, TestTreeModel::Type type);
 
+public slots:
+    void runTestCase(const QString &suiteName, const QString &testCaseName);
+    void runTestSuite(const QString &suiteName);
+
 private:
     QMap<QString, QString> m_suites;
+    TestSquishTools *m_squishTools;
 
 };
 

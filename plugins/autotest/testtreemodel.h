@@ -80,6 +80,8 @@ public:
     QSet<QString> qmlFilesForProFile(const QString &proFile) const;
     bool hasUnnamedQuickTests() const;
 
+    QStringList getSelectedSquishTestCases(const QString &suiteConfPath);
+
 #ifdef WITH_TESTS
     int autoTestsCount() const;
     int namedQuickTestsCount() const;

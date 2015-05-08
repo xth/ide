@@ -715,6 +715,27 @@ bool TestTreeModel::hasUnnamedQuickTests() const
     return false;
 }
 
+QStringList TestTreeModel::getSelectedSquishTestCases(const QString &suiteConfPath)
+{
+    QStringList result;
+    const int count = m_squishTestRootItem->childCount();
+    if (count) {
+        for (int row = 0; row < count; ++row) {
+            TestTreeItem *child = m_squishTestRootItem->child(row);
+            if (child->filePath() == suiteConfPath) {
+                const int testCaseCount = child->childCount();
+                for (int testCaseRow = 0; testCaseRow < testCaseCount; ++testCaseRow) {
+                    TestTreeItem *grandChild = child->child(testCaseRow);
+                    if (grandChild->checked())
+                        result.append(grandChild->name());
+                }
+                break;
+            }
+        }
+    }
+    return result;
+}
+
 TestTreeItem *TestTreeModel::unnamedQuickTests() const
 {
     for (int row = 0, count = m_quickTestRootItem->childCount(); row < count; ++row) {

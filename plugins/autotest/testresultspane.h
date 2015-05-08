@@ -28,6 +28,8 @@ class QFrame;
 class QLabel;
 class QModelIndex;
 class QMenu;
+class QPlainTextEdit;
+class QTabWidget;
 class QToolButton;
 QT_END_NAMESPACE
 
@@ -73,6 +75,7 @@ signals:
 
 public slots:
     void addTestResult(const TestResult &result);
+    void addLogoutput(const QString &output);
 
 private slots:
     void onItemActivated(const QModelIndex &index);
@@ -90,7 +93,9 @@ private:
     void onTestRunFinished();
     void onTestTreeModelChanged();
 
+    QTabWidget *m_outputPane;
     QWidget *m_outputWidget;
+    QPlainTextEdit *m_runnerServerLog;
     QFrame *m_summaryWidget;
     QLabel *m_summaryLabel;
     Utils::TreeView *m_treeView;
