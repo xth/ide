@@ -20,6 +20,8 @@
 #ifndef SQUISHSETTINGS_H
 #define SQUISHSETTINGS_H
 
+#include <utils/fileutils.h>
+
 #include <QtGlobal>
 
 QT_BEGIN_NAMESPACE
@@ -36,6 +38,8 @@ struct SquishSettings
 
     bool operator==(const SquishSettings &other) const;
     bool operator!=(const SquishSettings &other) const;
+
+    Utils::FileName squishPath;
 };
 
 

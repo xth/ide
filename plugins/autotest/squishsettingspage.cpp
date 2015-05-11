@@ -35,11 +35,13 @@ SquishSettingsWidget::SquishSettingsWidget(QWidget *parent)
 
 void SquishSettingsWidget::setSettings(const SquishSettings &settings)
 {
+    m_ui.squishPathChooser->setFileName(settings.squishPath);
 }
 
 SquishSettings SquishSettingsWidget::settings() const
 {
     SquishSettings result;
+    result.squishPath = m_ui.squishPathChooser->fileName();
     return result;
 }
 

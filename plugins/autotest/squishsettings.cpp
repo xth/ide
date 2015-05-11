@@ -25,20 +25,24 @@ namespace Autotest {
 namespace Internal {
 
 static const char group[] = "Squish";
+static const char squishPathKey[] = "SquishPath";
 
 void SquishSettings::toSettings(QSettings *s) const
 {
     s->beginGroup(QLatin1String(group));
+    s->setValue(QLatin1String(squishPathKey), squishPath.toString());
     s->endGroup();
 }
 
 void SquishSettings::fromSettings(const QSettings *s)
 {
+    const QString root = QLatin1String(group) + QLatin1Char('/');
+    squishPath = Utils::FileName::fromString(s->value(root + QLatin1String(squishPathKey)).toString());
 }
 
 bool SquishSettings::operator==(const SquishSettings &other) const
 {
-    return true;
+    return squishPath == other.squishPath;
 }
 
 bool SquishSettings::operator!=(const SquishSettings &other) const
