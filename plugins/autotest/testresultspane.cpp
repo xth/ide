@@ -291,7 +291,7 @@ void TestResultsPane::onRunSelectedTriggered()
 
 void TestResultsPane::initializeFilterMenu()
 {
-    const bool omitIntern = AutotestPlugin::instance()->settings()->omitInternalMssg;
+    const bool omitIntern = AutotestPlugin::instance()->qtestSettings()->omitInternalMssg;
     // FilterModel has all messages enabled by default
     if (omitIntern)
         m_filterModel->toggleTestResultType(Result::MESSAGE_INTERNAL);

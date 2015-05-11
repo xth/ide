@@ -19,6 +19,8 @@
 
 #include "autotestplugin.h"
 #include "autotestconstants.h"
+#include "squishsettings.h"
+#include "squishsettingspage.h"
 #include "testcodeparser.h"
 #include "testrunner.h"
 #include "testsettings.h"
@@ -57,7 +59,7 @@ using namespace Core;
 static AutotestPlugin *m_instance = 0;
 
 AutotestPlugin::AutotestPlugin()
-    : m_settings(new TestSettings)
+    : m_qtestSettings(new TestSettings), m_squishSettings(new SquishSettings)
 {
     // needed to be used in QueuedConnection connects
     qRegisterMetaType<TestResult>();
@@ -82,9 +84,14 @@ AutotestPlugin *AutotestPlugin::instance()
     return m_instance;
 }
 
-QSharedPointer<TestSettings> AutotestPlugin::settings() const
+QSharedPointer<TestSettings> AutotestPlugin::qtestSettings() const
 {
-    return m_settings;
+    return m_qtestSettings;
+}
+
+QSharedPointer<SquishSettings> AutotestPlugin::squishSettings() const
+{
+    return m_squishSettings;
 }
 
 bool AutotestPlugin::checkLicense()
@@ -142,8 +149,10 @@ bool AutotestPlugin::initialize(const QStringList &arguments, QString *errorStri
 
     initializeMenuEntries();
 
-    m_settings->fromSettings(ICore::settings());
-    addAutoReleasedObject(new TestSettingsPage(m_settings));
+    m_qtestSettings->fromSettings(ICore::settings());
+    m_squishSettings->fromSettings(ICore::settings());
+    addAutoReleasedObject(new TestSettingsPage(m_qtestSettings));
+    addAutoReleasedObject(new SquishSettingsPage(m_squishSettings));
     addAutoReleasedObject(new TestNavigationWidgetFactory);
     addAutoReleasedObject(TestResultsPane::instance());
 

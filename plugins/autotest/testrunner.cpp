@@ -186,7 +186,7 @@ void performTestRun(QFutureInterface<void> &futureInterface,
 
 void TestRunner::runTests()
 {
-    const QSharedPointer<TestSettings> settings = AutotestPlugin::instance()->settings();
+    const QSharedPointer<TestSettings> settings = AutotestPlugin::instance()->qtestSettings();
     const int timeout = settings->timeout;
     const QString metricsOption = TestSettings::metricsTypeToOption(settings->metrics);
     const bool displayRunConfigWarnings = !settings->omitRunConfigWarn;

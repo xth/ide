@@ -9,6 +9,8 @@ include(autotest_dependencies.pri)
 DEFINES += AUTOTEST_LIBRARY
 
 SOURCES += \
+    squishsettings.cpp \
+    squishsettingspage.cpp \
     testtreeview.cpp \
     testtreemodel.cpp \
     testtreeitem.cpp \
@@ -32,6 +34,8 @@ SOURCES += \
     testsquishutils.cpp
 
 HEADERS += \
+    squishsettings.h \
+    squishsettingspage.h \
     testtreeview.h \
     testtreemodel.h \
     testtreeitem.h \
@@ -60,6 +64,7 @@ RESOURCES += \
     autotest.qrc
 
 FORMS += \
+    squishsettingspage.ui \
     testsettingspage.ui \
     opensquishsuitesdialog.ui
 

@@ -24,7 +24,7 @@
 namespace Autotest {
 namespace Internal {
 
-static const char group[] = "Autotest";
+static const char group[] = "QTest";
 static const char timeoutKey[] = "Timeout";
 static const char metricsKey[] = "Metrics";
 static const char omitInternalKey[] = "OmitInternal";

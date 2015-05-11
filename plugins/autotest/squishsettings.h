@@ -17,52 +17,29 @@
 **
 ****************************************************************************/
 
-#ifndef TESTSETTINGSPAGE_H
-#define TESTSETTINGSPAGE_H
+#ifndef SQUISHSETTINGS_H
+#define SQUISHSETTINGS_H
 
-#include "ui_testsettingspage.h"
+#include <QtGlobal>
 
-#include <coreplugin/dialogs/ioptionspage.h>
-
-#include <QPointer>
-#include <QSharedPointer>
+QT_BEGIN_NAMESPACE
+class QSettings;
+QT_END_NAMESPACE
 
 namespace Autotest {
 namespace Internal {
 
-struct TestSettings;
-
-class TestSettingsWidget : public QWidget
+struct SquishSettings
 {
-    Q_OBJECT
-public:
-    explicit TestSettingsWidget(QWidget *parent = 0);
+    void toSettings(QSettings *s) const;
+    void fromSettings(const QSettings *s);
 
-    void setSettings(const TestSettings &settings);
-    TestSettings settings() const;
-
-private:
-    Ui::TestSettingsPage m_ui;
-
+    bool operator==(const SquishSettings &other) const;
+    bool operator!=(const SquishSettings &other) const;
 };
 
-class TestSettingsPage : public Core::IOptionsPage
-{
-    Q_OBJECT
-public:
-    explicit TestSettingsPage(const QSharedPointer<TestSettings> &settings);
-    ~TestSettingsPage();
-
-    QWidget *widget();
-    void apply();
-    void finish() { }
-
-private:
-    QSharedPointer<TestSettings> m_settings;
-    QPointer<TestSettingsWidget> m_widget;
-};
 
 } // namespace Internal
 } // namespace Autotest
 
-#endif // TESTSETTINGSPAGE_H
+#endif // SQUISHSETTINGS_H

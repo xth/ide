@@ -131,7 +131,7 @@ void TestResultDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         int fontHeight = fm.height();
         output.replace(QLatin1Char('\n'), QChar::LineSeparator);
 
-        if (AutotestPlugin::instance()->settings()->limitResultOutput
+        if (AutotestPlugin::instance()->qtestSettings()->limitResultOutput
                 && output.length() > outputLimit)
             output = output.left(outputLimit).append(QLatin1String("..."));
 
@@ -237,7 +237,7 @@ QSize TestResultDelegate::sizeHint(const QStyleOptionViewItem &option, const QMo
         int height = 0;
         int leading = fm.leading();
 
-        if (AutotestPlugin::instance()->settings()->limitResultOutput
+        if (AutotestPlugin::instance()->qtestSettings()->limitResultOutput
                 && output.length() > outputLimit)
             output = output.left(outputLimit).append(QLatin1String("..."));
 

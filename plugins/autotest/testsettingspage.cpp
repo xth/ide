@@ -89,8 +89,8 @@ TestSettings TestSettingsWidget::settings() const
 TestSettingsPage::TestSettingsPage(const QSharedPointer<TestSettings> &settings)
     : m_settings(settings), m_widget(0)
 {
-    setId("A.General");
-    setDisplayName(tr("General"));
+    setId("A.QTest");
+    setDisplayName(tr("QTest"));
     setCategory(Constants::AUTOTEST_SETTINGS_CATEGORY);
     setDisplayCategory(tr("Test Settings"));
     setCategoryIcon(QLatin1String(":/images/autotest.png"));

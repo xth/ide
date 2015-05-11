@@ -28,6 +28,7 @@ namespace Autotest {
 namespace Internal {
 
 struct TestSettings;
+struct SquishSettings;
 
 class AutotestPlugin : public ExtensionSystem::IPlugin
 {
@@ -40,7 +41,8 @@ public:
 
     static AutotestPlugin *instance();
 
-    QSharedPointer<TestSettings> settings() const;
+    QSharedPointer<TestSettings> qtestSettings() const;
+    QSharedPointer<SquishSettings> squishSettings() const;
 
     bool initialize(const QStringList &arguments, QString *errorString);
     void extensionsInitialized();
@@ -53,7 +55,8 @@ private:
     void onRunSelectedTriggered();
     void updateMenuItemsEnabledState();
     QList<QObject *> createTestObjects() const;
-    const QSharedPointer<TestSettings> m_settings;
+    const QSharedPointer<TestSettings> m_qtestSettings;
+    const QSharedPointer<SquishSettings> m_squishSettings;
 };
 
 } // namespace Internal
