@@ -38,10 +38,13 @@ public:
     static TestSquishFileHandler *instance();
 
     void openTestSuites();
+    void closeTestSuite(const QString &suite);
+    void closeAllTestSuites();
 
 signals:
     void testTreeItemCreated(const TestTreeItem &item, TestTreeModel::Type type);
     void testTreeItemModified(const TestTreeItem &item, TestTreeModel::Type type, const QString &file);
+    void testTreeItemsRemoved(const QString &filePath, TestTreeModel::Type type);
 
 private:
     QMap<QString, QString> m_suites;

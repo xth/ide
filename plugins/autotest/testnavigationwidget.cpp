@@ -37,6 +37,7 @@
 
 #include <QAction>
 #include <QMenu>
+#include <QMessageBox>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -107,6 +108,7 @@ bool TestNavigationWidget::handleSquishContextMenuEvent(QContextMenuEvent *event
                 deleteTestCase->setEnabled(enabled);
                 menu.addSeparator();
             } else if (type == TestTreeItem::SQUISH_SUITE) {
+                const QString suiteName = list.first().data().toString();
                 isSquishMenu = true;
                 QAction *runThisTestSuite = new QAction(tr("Run This Test Suite"), &menu);
                 menu.addAction(runThisTestSuite);
@@ -122,6 +124,11 @@ bool TestNavigationWidget::handleSquishContextMenuEvent(QContextMenuEvent *event
                 menu.addAction(deleteTestSuite);
                 deleteTestSuite->setEnabled(enabled);
                 menu.addSeparator();
+
+                connect(closeTestSuite, &QAction::triggered,
+                        [suiteName] () {
+                    TestSquishFileHandler::instance()->closeTestSuite(suiteName);
+                });
             }
         }
     }
@@ -148,6 +155,14 @@ bool TestNavigationWidget::handleSquishContextMenuEvent(QContextMenuEvent *event
             QAction *closeAllSuites = new QAction(tr("Close All Test Suites"), &menu);
             menu.addAction(closeAllSuites);
             closeAllSuites->setEnabled(enabled);
+
+            connect(closeAllSuites, &QAction::triggered, [this] () {
+                if (QMessageBox::question(this, tr("Close All Test Suites"),
+                                          tr("Are you sure you want to close all test suites?"
+                                             /*"\nThis will close all related files as well."*/))
+                        == QMessageBox::Yes)
+                    TestSquishFileHandler::instance()->closeAllTestSuites();
+            });
         }
 
         menu.exec(mapToGlobal(event->pos()));

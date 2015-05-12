@@ -89,5 +89,26 @@ void TestSquishFileHandler::openTestSuites()
     }
 }
 
+void TestSquishFileHandler::closeTestSuite(const QString &suite)
+{
+    const QString suiteConf = m_suites.value(suite);
+    if (suiteConf.isEmpty())
+        return;
+
+    // TODO close respective editors if there are any
+    // TODO remove file watcher
+    emit testTreeItemsRemoved(suiteConf, TestTreeModel::SquishTest);
+    m_suites.remove(suite);
+}
+
+void TestSquishFileHandler::closeAllTestSuites()
+{
+    // TODO close respective editors if there are any
+    // TODO remove file watcher
+    foreach (const QString &suiteConf, m_suites.values())
+        emit testTreeItemsRemoved(suiteConf, TestTreeModel::SquishTest);
+    m_suites.clear();
+}
+
 } // namespace Internal
 } // namespace Autotest

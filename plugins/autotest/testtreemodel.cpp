@@ -81,6 +81,8 @@ TestTreeModel::TestTreeModel(QObject *parent) :
             this, &TestTreeModel::addTestTreeItem, Qt::QueuedConnection);
     connect(m_squishFileHandler, &TestSquishFileHandler::testTreeItemModified,
             this, &TestTreeModel::modifyTestTreeItem, Qt::QueuedConnection);
+    connect(m_squishFileHandler, &TestSquishFileHandler::testTreeItemsRemoved,
+            this, &TestTreeModel::removeTestTreeItems, Qt::QueuedConnection);
 
 //    CppTools::CppModelManagerInterface *cppMM = CppTools::CppModelManagerInterface::instance();
 //    if (cppMM) {
