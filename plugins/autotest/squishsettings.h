@@ -23,6 +23,7 @@
 #include <utils/fileutils.h>
 
 #include <QtGlobal>
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 class QSettings;
@@ -40,6 +41,11 @@ struct SquishSettings
     bool operator!=(const SquishSettings &other) const;
 
     Utils::FileName squishPath;
+    Utils::FileName licensePath;
+    QString serverHost;
+    quint16 serverPort;
+    bool local;
+    bool verbose;
 };
 
 

@@ -31,18 +31,37 @@ SquishSettingsWidget::SquishSettingsWidget(QWidget *parent)
     : QWidget(parent)
 {
     m_ui.setupUi(this);
+
+    connect(m_ui.localCheckBox, &QCheckBox::toggled,
+            this, &SquishSettingsWidget::onLocalToggled);
 }
 
 void SquishSettingsWidget::setSettings(const SquishSettings &settings)
 {
     m_ui.squishPathChooser->setFileName(settings.squishPath);
+    m_ui.licensePathChooser->setFileName(settings.licensePath);
+    m_ui.localCheckBox->setChecked(settings.local);
+    m_ui.serverHostLineEdit->setText(settings.serverHost);
+    m_ui.serverPortSpinBox->setValue(settings.serverPort);
+    m_ui.verboseCheckBox->setChecked(settings.verbose);
 }
 
 SquishSettings SquishSettingsWidget::settings() const
 {
     SquishSettings result;
     result.squishPath = m_ui.squishPathChooser->fileName();
+    result.licensePath = m_ui.licensePathChooser->fileName();
+    result.local = m_ui.localCheckBox->checkState() == Qt::Checked;
+    result.serverHost = m_ui.serverHostLineEdit->text();
+    result.serverPort = m_ui.serverPortSpinBox->value();
+    result.verbose = m_ui.verboseCheckBox->checkState() == Qt::Checked;
     return result;
+}
+
+void SquishSettingsWidget::onLocalToggled(bool checked)
+{
+    m_ui.serverHostLineEdit->setEnabled(!checked);
+    m_ui.serverPortSpinBox->setEnabled(!checked);
 }
 
 SquishSettingsPage::SquishSettingsPage(const QSharedPointer<SquishSettings> &settings)

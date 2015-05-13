@@ -43,6 +43,8 @@ public:
     SquishSettings settings() const;
 
 private:
+    void onLocalToggled(bool checked);
+
     Ui::SquishSettingsPage m_ui;
 
 };
