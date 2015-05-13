@@ -30,6 +30,12 @@
 namespace Autotest {
 namespace Internal {
 
+namespace Result {
+    enum ItemRole {
+        TypeRole = Qt::UserRole
+    };
+} // namespace Result
+
 class TestResultModel : public QAbstractItemModel
 {
     Q_OBJECT

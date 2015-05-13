@@ -29,6 +29,7 @@ namespace Internal {
 
 namespace Result{
 enum Type {
+    // QTest / Quick Test
     PASS,
     FAIL,
     EXPECTED_FAIL,
@@ -42,9 +43,27 @@ enum Type {
     MESSAGE_FATAL,
     MESSAGE_INTERNAL,
     MESSAGE_CURRENT_TEST,
-    UNKNOWN             // ???
+    // Squish
+    SQUISH_LOG,
+    SQUISH_PASS,
+    SQUISH_FAIL,
+    SQUISH_EXPECTED_FAIL,
+    SQUISH_UNEXPECTED_PASS,
+    SQUISH_WARN,
+    SQUISH_ERROR,
+    SQUISH_FATAL,
+    SQUISH_START,
+    SQUISH_END,
+    // ???
+    UNKNOWN,
+
+    // group stuff
+    QTEST_GROUP_BEGIN = PASS,
+    QTEST_GROUP_END = MESSAGE_CURRENT_TEST,
+    SQUISH_GROUP_BEGIN = SQUISH_LOG,
+    SQUISH_GROUP_END = SQUISH_END
 };
-}
+} // namespace Result
 
 class TestResult
 {
@@ -70,6 +89,7 @@ public:
     static Result::Type toResultType(int rt);
     static QString resultToString(const Result::Type type);
     static QColor colorForType(const Result::Type type);
+    static QString maxString(const Result::Type type);
 
 private:
     QString m_class;

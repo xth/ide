@@ -48,7 +48,7 @@ private:
     class LayoutPositions
     {
     public:
-        LayoutPositions(QStyleOptionViewItemV4 &options, TestResultModel *model)
+        LayoutPositions(QStyleOptionViewItemV4 &options, TestResultModel *model, Result::Type type)
             : m_totalWidth(options.rect.width()),
               m_maxFileLength(model->maxWidthOfFileName(options.font)),
               m_maxLineLength(model->maxWidthOfLineNumber(options.font)),
@@ -56,7 +56,7 @@ private:
               m_top(options.rect.top()),
               m_bottom(options.rect.bottom())
         {
-            m_typeAreaWidth = QFontMetrics(options.font).width(QLatin1String("XXXXXXXX"));
+            m_typeAreaWidth = QFontMetrics(options.font).width(TestResult::maxString(type));
             int flexibleArea = lineAreaLeft() - textAreaLeft() - ITEM_SPACING;
             if (m_maxFileLength > flexibleArea / 2)
                 m_realFileLength = flexibleArea / 2;

@@ -19,6 +19,8 @@
 
 #include "testresult.h"
 
+#include <utils/qtcassert.h>
+
 namespace Autotest {
 namespace Internal {
 
@@ -93,6 +95,22 @@ Result::Type TestResult::toResultType(int rt)
         return Result::MESSAGE_INTERNAL;
     case Result::MESSAGE_CURRENT_TEST:
         return Result::MESSAGE_CURRENT_TEST;
+    case Result::SQUISH_LOG:
+        return Result::SQUISH_LOG;
+    case Result::SQUISH_PASS:
+        return Result::SQUISH_PASS;
+    case Result::SQUISH_FAIL:
+        return Result::SQUISH_FAIL;
+    case Result::SQUISH_EXPECTED_FAIL:
+        return Result::SQUISH_EXPECTED_FAIL;
+    case Result::SQUISH_UNEXPECTED_PASS:
+        return Result::SQUISH_UNEXPECTED_PASS;
+    case Result::SQUISH_WARN:
+        return Result::SQUISH_WARN;
+    case Result::SQUISH_FATAL:
+        return Result::SQUISH_FATAL;
+    case Result::SQUISH_START:
+        return Result::SQUISH_START;
     default:
         return Result::UNKNOWN;
     }
@@ -126,6 +144,26 @@ QString TestResult::resultToString(const Result::Type type)
         return QLatin1String("BPASS");
     case Result::BLACKLISTED_FAIL:
         return QLatin1String("BFAIL");
+    case Result::SQUISH_LOG:
+        return QLatin1String("Log");
+    case Result::SQUISH_PASS:
+        return QLatin1String("Pass");
+    case Result::SQUISH_FAIL:
+        return QLatin1String("Fail");
+    case Result::SQUISH_ERROR:
+        return QLatin1String("Error");
+    case Result::SQUISH_FATAL:
+        return QLatin1String("Fatal");
+    case Result::SQUISH_EXPECTED_FAIL:
+        return QLatin1String("Expected Fail");
+    case Result::SQUISH_UNEXPECTED_PASS:
+        return QLatin1String("Unexpected Pass");
+    case Result::SQUISH_WARN:
+        return QLatin1String("Warning");
+    case Result::SQUISH_START:
+        return QLatin1String("Start");
+    case Result::SQUISH_END:
+        return QLatin1String("Test finished");
     default:
         return QLatin1String("UNKNOWN");
     }
@@ -157,9 +195,37 @@ QColor TestResult::colorForType(const Result::Type type)
     case Result::MESSAGE_INTERNAL:
     case Result::MESSAGE_CURRENT_TEST:
         return QColor("transparent");
+    case Result::SQUISH_LOG:
+    case Result::SQUISH_START:
+    case Result::SQUISH_END:
+        return QColor(0, 0, 0);
+    case Result::SQUISH_PASS:
+        return QColor(0, 0x99, 0);
+    case Result::SQUISH_FAIL:
+    case Result::SQUISH_ERROR:
+        return QColor(0xa0, 0, 0);
+    case Result::SQUISH_EXPECTED_FAIL:
+        return QColor(0, 0xff, 0);
+    case Result::SQUISH_UNEXPECTED_PASS:
+        return QColor(0xff, 0, 0);
+    case Result::SQUISH_WARN:
+        return QColor(0x86, 0, 0x86);
+    case Result::SQUISH_FATAL:
+        return QColor(0x64, 0, 0);
     default:
-        return QColor("#000000");
+        return QColor(0, 0, 0);
     }
+}
+
+QString TestResult::maxString(const Result::Type type)
+{
+    if ((type >= Result::QTEST_GROUP_BEGIN && type <= Result::QTEST_GROUP_END)
+            || type == Result::UNKNOWN) {
+        return QLatin1String("UNKNOWN");
+    } else if (type >= Result::SQUISH_GROUP_BEGIN && type <= Result::SQUISH_GROUP_END) {
+        return QLatin1String("Unexpected Pass");
+    }
+    QTC_ASSERT(false, return QString());
 }
 
 bool operator==(const TestResult &t1, const TestResult &t2)

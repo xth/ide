@@ -79,7 +79,9 @@ QtcPlugin {
         "testsquishutils.cpp",
         "testsquishutils.h",
         "testsquishtools.cpp",
-        "testsquishtools.h"
+        "testsquishtools.h",
+        "squishxmloutputhandler.cpp",
+        "squishxmloutputhandler.h"
     ]
 
     Group {

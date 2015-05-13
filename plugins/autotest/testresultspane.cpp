@@ -170,6 +170,23 @@ void TestResultsPane::addLogoutput(const QString &output)
     m_runnerServerLog->appendPlainText(output);
 }
 
+void TestResultsPane::updateSquishSummaryLabel()
+{
+    const int passes = m_model->resultTypeCount(Result::SQUISH_PASS)
+            + m_model->resultTypeCount(Result::SQUISH_EXPECTED_FAIL);
+    const int fails = m_model->resultTypeCount(Result::SQUISH_FAIL)
+            + m_model->resultTypeCount(Result::SQUISH_UNEXPECTED_PASS);
+
+    const QString labelText = tr("<p><b>Test summary:</b>&nbsp;&nbsp; %1 passes, %2 fails, "
+                                 "%3 fatals, %4 errors, %5 warnings.</p>")
+            .arg(passes).arg(fails).arg(m_model->resultTypeCount(Result::SQUISH_FATAL))
+            .arg(m_model->resultTypeCount(Result::SQUISH_ERROR))
+            .arg(m_model->resultTypeCount(Result::SQUISH_WARN));
+
+    m_summaryLabel->setText(labelText);
+    m_summaryWidget->setVisible(true);
+}
+
 QWidget *TestResultsPane::outputWidget(QWidget *parent)
 {
     if (m_outputPane) {
@@ -331,6 +348,7 @@ void TestResultsPane::initializeFilterMenu()
     textAndType.insert(Result::MESSAGE_DEBUG, tr("Debug Messages"));
     textAndType.insert(Result::MESSAGE_WARN, tr("Warning Messages"));
     textAndType.insert(Result::MESSAGE_INTERNAL, tr("Internal Messages"));
+    textAndType.insert(Result::SQUISH_LOG, tr("Log Messages"));
     foreach (Result::Type result, textAndType.keys()) {
         QAction *action = new QAction(m_filterMenu);
         action->setText(textAndType.value(result));

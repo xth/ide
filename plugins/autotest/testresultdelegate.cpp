@@ -73,9 +73,9 @@ void TestResultDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
     painter->setPen(foreground);
     TestResultFilterModel *resultFilterModel = static_cast<TestResultFilterModel *>(view->model());
     TestResultModel *resultModel = static_cast<TestResultModel *>(resultFilterModel->sourceModel());
-    LayoutPositions positions(opt, resultModel);
     TestResult testResult = resultModel->testResult(resultFilterModel->mapToSource(index));
     Result::Type type = testResult.result();
+    LayoutPositions positions(opt, resultModel, type);
 
     QIcon icon = index.data(Qt::DecorationRole).value<QIcon>();
     if (!icon.isNull())
@@ -119,6 +119,7 @@ void TestResultDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
                 output.append(QLatin1Char('\n')).append(desc.mid(breakPos));
         }
         break;
+    // SQUISH_XYZ will be handled with default as well
     default:
         output = desc;
         if (!selected)
@@ -194,7 +195,8 @@ QSize TestResultDelegate::sizeHint(const QStyleOptionViewItem &option, const QMo
     int fontHeight = fm.height();
     TestResultFilterModel *resultFilterModel = static_cast<TestResultFilterModel *>(view->model());
     TestResultModel *resultModel = static_cast<TestResultModel *>(resultFilterModel->sourceModel());
-    LayoutPositions positions(opt, resultModel);
+    LayoutPositions positions(opt, resultModel,
+                              TestResult::toResultType(index.data(Result::TypeRole).toInt()));
     QSize s;
     s.setWidth(opt.rect.width());
 
@@ -228,6 +230,7 @@ QSize TestResultDelegate::sizeHint(const QStyleOptionViewItem &option, const QMo
                 output.append(QLatin1Char('\n')).append(desc.mid(breakPos));
             }
             break;
+        // SQUISH_XYZ will be handled with default as well
         default:
             output = desc;
         }

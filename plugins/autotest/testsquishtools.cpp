@@ -21,6 +21,7 @@
 #include "squishsettings.h"
 #include "testsquishtools.h"
 #include "testresultspane.h"
+#include "squishxmloutputhandler.h"
 
 #include <QDebug> // TODO remove
 
@@ -56,10 +57,16 @@ TestSquishTools::TestSquishTools(QObject *parent)
       m_state(Idle),
       m_currentResultsXML(0),
       m_resultsFileWatcher(0),
-      m_testRunning(false)
+      m_testRunning(false),
+      m_xmlOutputHandler(0)
 {
+    TestResultsPane *resultPane = TestResultsPane::instance();
     connect(this, &TestSquishTools::logOutputReceived,
-            TestResultsPane::instance(), &TestResultsPane::addLogoutput, Qt::QueuedConnection);
+            resultPane, &TestResultsPane::addLogoutput, Qt::QueuedConnection);
+    connect(this, &TestSquishTools::squishTestRunStarted,
+            resultPane, &TestResultsPane::clearContents);
+    connect(this, &TestSquishTools::squishTestRunFinished,
+            resultPane, &TestResultsPane::updateSquishSummaryLabel);
 }
 
 TestSquishTools::~TestSquishTools()
@@ -80,6 +87,9 @@ TestSquishTools::~TestSquishTools()
         delete m_serverProcess;
         m_serverProcess = 0;
     }
+
+    if (m_xmlOutputHandler)
+        delete m_xmlOutputHandler;
 }
 
 struct SquishToolsSettings
@@ -134,6 +144,12 @@ void TestSquishTools::runTestCases(const QString &suitePath, const QStringList &
     m_additionalRunnerArguments << QLatin1String("--interactive")
                                 << QLatin1String("--resultdir")
                                 << QDir::toNativeSeparators(m_currentResultsDirectory);
+
+    if (m_xmlOutputHandler)
+        delete m_xmlOutputHandler;
+    m_xmlOutputHandler = new SquishXmlOutputHandler(this);
+    connect(this, &TestSquishTools::resultOutputCreated,
+            m_xmlOutputHandler, &SquishXmlOutputHandler::outputAvailable, Qt::QueuedConnection);
 
     m_testRunning = true;
     emit squishTestRunStarted();
@@ -212,9 +228,14 @@ void TestSquishTools::setState(TestSquishTools::State state)
         if (m_testCases.isEmpty()) {
             m_request = ServerStopRequested;
             stopSquishServer();
-            // TODO merge result files
+            QString error;
+            SquishXmlOutputHandler::mergeResultFiles(m_reportFiles, m_currentResultsDirectory,
+                                                     QDir(m_suitePath).dirName(), &error);
+            if (!error.isEmpty())
+                QMessageBox::critical(Core::ICore::dialogParent(), tr("Error"), error);
             logrotateTestResults();
         } else {
+            m_xmlOutputHandler->clearForNextRun();
             startSquishRunner();
         }
         break;
@@ -590,7 +611,7 @@ void TestSquishTools::onRunnerOutput(const QString)
 
     if (firstNonWhitespace(output) == '<') {
         // output that must be used for the TestResultsPane
-        qDebug() << "RunnerOutput:" << output;
+        emit resultOutputCreated(output);
     } else {
         foreach (const QByteArray &line, output.split('\n')) {
             const QByteArray trimmed = line.trimmed();

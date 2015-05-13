@@ -107,6 +107,9 @@ QVariant TestResultModel::data(const QModelIndex &index, int role) const
         const TestResult &tr = m_testResults.at(index.row());
         return testResultIcon(tr.result());
     }
+    if (role == Result::TypeRole) {
+        return m_testResults.at(index.row()).result();
+    }
 
     return QVariant();
 }
@@ -124,7 +127,8 @@ void TestResultModel::addTestResult(const TestResult &testResult)
         const QModelIndex changed = index(m_testResults.size() - 1, 0, QModelIndex());
         emit dataChanged(changed, changed);
     } else {
-        if (!isCurrentTestMssg && position) // decrement only if at least one other item
+        // decrement only if last message was of type MESSAGE_CURRENT_TEST
+        if (!isCurrentTestMssg && lastMssg.result() == Result::MESSAGE_CURRENT_TEST)
             --position;
         beginInsertRows(QModelIndex(), position, position);
         m_testResults.insert(position, testResult);
@@ -222,7 +226,11 @@ void TestResultFilterModel::enableAllResultTypes()
               << Result::MESSAGE_WARN << Result::MESSAGE_INTERNAL
               << Result::MESSAGE_FATAL << Result::UNKNOWN << Result::BLACKLISTED_PASS
               << Result::BLACKLISTED_FAIL << Result::BENCHMARK
-              << Result::MESSAGE_CURRENT_TEST;
+              << Result::MESSAGE_CURRENT_TEST
+              << Result::SQUISH_LOG << Result::SQUISH_PASS << Result::SQUISH_FAIL
+              << Result::SQUISH_EXPECTED_FAIL << Result::SQUISH_UNEXPECTED_PASS
+              << Result::SQUISH_WARN << Result::SQUISH_ERROR << Result::SQUISH_FATAL
+              << Result::SQUISH_START << Result::SQUISH_END;
     invalidateFilter();
 }
 
@@ -233,7 +241,26 @@ void TestResultFilterModel::toggleTestResultType(Result::Type type)
     } else {
         m_enabled.insert(type);
     }
-    invalidateFilter();
+
+    switch (type) {
+    case Result::PASS:
+        toggleTestResultType(Result::SQUISH_PASS);
+        break;
+    case Result::FAIL:
+        toggleTestResultType(Result::SQUISH_FAIL);
+        break;
+    case Result::EXPECTED_FAIL:
+        toggleTestResultType(Result::SQUISH_EXPECTED_FAIL);
+        break;
+    case Result::UNEXPECTED_PASS:
+        toggleTestResultType(Result::SQUISH_UNEXPECTED_PASS);
+        break;
+    case Result::MESSAGE_WARN:
+        toggleTestResultType(Result::SQUISH_WARN);
+        break;
+    default:
+        invalidateFilter();
+    }
 }
 
 void TestResultFilterModel::clearTestResults()

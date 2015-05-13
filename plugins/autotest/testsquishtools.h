@@ -33,6 +33,8 @@ QT_END_NAMESPACE
 namespace Autotest {
 namespace Internal {
 
+class SquishXmlOutputHandler;
+
 class TestSquishTools : public QObject
 {
     Q_OBJECT
@@ -64,6 +66,7 @@ signals:
     void logOutputReceived(const QString &output);
     void squishTestRunStarted();
     void squishTestRunFinished();
+    void resultOutputCreated(const QByteArray &output);
 
 private:
     enum Request
@@ -113,6 +116,7 @@ private:
     QWindowList m_lastTopLevelWindows;
     bool m_testRunning;
     qint64 m_readResultsCount;
+    SquishXmlOutputHandler *m_xmlOutputHandler;
 };
 
 } // namespace Internal
