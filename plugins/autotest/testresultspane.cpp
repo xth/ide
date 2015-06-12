@@ -159,6 +159,8 @@ TestResultsPane::~TestResultsPane()
 void TestResultsPane::addTestResult(const TestResult &result)
 {
     m_model->addTestResult(result);
+    if (result.result() >= Result::SQUISH_GROUP_BEGIN && result.result() <= Result::SQUISH_GROUP_END)
+        updateSquishSummaryLabel();
     if (!m_treeView->isVisible())
         popup(Core::IOutputPane::NoModeSwitch);
     flash();

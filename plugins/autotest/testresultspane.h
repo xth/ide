@@ -70,13 +70,13 @@ public:
     bool canPrevious() const;
     void goToNext();
     void goToPrev();
+    void updateSquishSummaryLabel();
 
 signals:
 
 public slots:
     void addTestResult(const TestResult &result);
     void addLogoutput(const QString &output);
-    void updateSquishSummaryLabel();
 
 private slots:
     void onItemActivated(const QModelIndex &index);

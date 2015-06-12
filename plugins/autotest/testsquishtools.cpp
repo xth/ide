@@ -65,8 +65,6 @@ TestSquishTools::TestSquishTools(QObject *parent)
             resultPane, &TestResultsPane::addLogoutput, Qt::QueuedConnection);
     connect(this, &TestSquishTools::squishTestRunStarted,
             resultPane, &TestResultsPane::clearContents);
-    connect(this, &TestSquishTools::squishTestRunFinished,
-            resultPane, &TestResultsPane::updateSquishSummaryLabel);
 }
 
 TestSquishTools::~TestSquishTools()
@@ -505,6 +503,9 @@ void TestSquishTools::onRunnerFinished(int, QProcess::ExitStatus)
         m_resultsFileWatcher = 0;
     }
     if (m_currentResultsXML) {
+        // make sure results are being read if not done yet
+        if (m_currentResultsXML->exists() && !m_currentResultsXML->isOpen())
+            onResultsDirChanged(m_currentResultsXML->fileName());
         if (m_currentResultsXML->isOpen())
             m_currentResultsXML->close();
         delete m_currentResultsXML;
@@ -634,6 +635,9 @@ void TestSquishTools::onRunnerErrorOutput()
 
 void TestSquishTools::onResultsDirChanged(const QString &filePath)
 {
+    if (!m_currentResultsXML)
+        return; // runner finished before, m_currentResultsXML deleted
+
     if (m_currentResultsXML->exists()) {
         delete m_resultsFileWatcher;
         m_resultsFileWatcher = 0;
@@ -643,6 +647,8 @@ void TestSquishTools::onResultsDirChanged(const QString &filePath)
             m_resultsFileWatcher->addPath(m_currentResultsXML->fileName());
             connect(m_resultsFileWatcher, &QFileSystemWatcher::fileChanged,
                     this, &TestSquishTools::onRunnerOutput);
+            // squishrunner might have finished already, call once at least
+            onRunnerOutput(m_currentResultsXML->fileName());
         } else {
             // TODO set a flag to process results.xml as soon the complete test run has finished
             qWarning() << "could not open results.xml although it exists"
